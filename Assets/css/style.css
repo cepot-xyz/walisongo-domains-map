@@ -69,8 +69,9 @@
 /* ===== COLOR PALETTE ===== */
 :root {
     --black: #121212;
-    --yellow: #d7ff50;
-    --green: #5ff057;
+    --white: #ffffff;
+    --yellow: #ffe600;
+    --green: #0dc700;
 }
 
 /* ===== RESET ===== */
@@ -192,12 +193,20 @@ body {
     background-color: #1a1a1a;
     border: 1px solid var(--yellow);
     border-radius: 12px;
-    max-width: 420px;
+    max-width: 620px;
     width: 90%;
+    max-height: 80vh;
     padding: 24px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     transform: scale(0.92) translateY(10px);
     transition: transform 0.26s ease;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.overlay-box::-webkit-scrollbar {
+    display: none;
 }
 
 .overlay.visible .overlay-box {
@@ -235,12 +244,13 @@ body {
 }
 
 .overlay-desc {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
     color: #ffffff;
     margin-bottom: 16px;
     -webkit-user-select: auto;
     user-select: auto;
+    white-space: pre-line;
 }
 
 .overlay-meta {
@@ -339,7 +349,7 @@ body {
 }
 
 #search-btn {
-    background: var(--yellow);
+    background: var(--white);
     color: #000000;
     border: none;
     border-radius: 16px;
@@ -351,7 +361,7 @@ body {
 }
 
 #search-btn:hover {
-    background: var(--green);
+    background: #f0f0f0;
 }
 
 #search-results {
@@ -568,6 +578,16 @@ body {
 
 .hamburger:hover {
     border-color: var(--yellow);
+}
+
+.sidebar.open ~ .hamburger {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.2);
+}
+
+.hamburger {
+    transition: transform 0.25s ease, opacity 0.2s ease, border-color 0.2s ease;
 }
 
 .sidebar-backdrop {

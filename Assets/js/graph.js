@@ -10,20 +10,26 @@ const Graph = (() => {
   const RESUME_DELAY = 3000;
   const TRACK_ZOOM = 3;
   const PULL_DEPTH = 70;
-  const FAC_COLOR = '#00d5ff';
+  const FAC_COLOR = '#0091ff';
   const FACULTY = new Set([
     'fakdakom', 'febi', 'feis', 'fisip', 'fitk', 'fk',
     'fpk', 'fs', 'fsh', 'fst', 'fuhum'
   ]);
-  const CORE_COLOR = '#ff5252';
-  const INFO_COLOR = '#d7ff50';
+  const CORE_COLOR = '#ff1100';
+  const INFO_COLOR = '#ffe600';
+  const LPM_COLOR = '#fd6bff';
   const CORE_SYSTEMS = new Set([
-    'akademik', 'sso', 'siremun', 'simahad'
+    'akademik', 'sso', 'siremun', 'simahad',
+    'datadiri', 'datadikti', 'datadiri-pasca', 'sitrace'
   ]);
-  const PRODI_COLOR = '#bb86fc';
+  const LPM_PERS = new Set([
+    'amanat', 'edukasi', 'justisia', 'missi', 'idea',
+    'invest', 'frekuensi', 'reference', 'esensi'
+  ]);
+  const PRODI_COLOR = '#8000ff';
   const PRODI = new Set([
     'pai', 'pba', 'pbi', 'pgmi', 'piaud', 'mpi',
-    'kpi', 'md', 'pmi', 'mhu',
+    'kpi', 'md', 'pmi', 'mhu', 'afi',
     'ei-febi', 'aks-febi', 'pbs-febi', 'mnj-febi', 'bisnisdigital', 's2es-febi',
     'hes', 'hpi', 'hki', 'ih', 'if', 's2-if', 's2-ih',
     'iat', 'saa', 's2iat', 's2-iai',
@@ -46,7 +52,7 @@ const Graph = (() => {
     pull: 0,
     baseZoom: 0.8,
     zoomAnim: null,
-    groups: { core: true, info: true, prodi: true, fac: true, other: true }
+    groups: { core: true, info: true, prodi: true, fac: true, other: true, lpm: true }
   };
 
   let svg, g;
@@ -76,12 +82,13 @@ const Graph = (() => {
     nodes.push(rootNode());
 
     const seen = new Set();
+    let lpmRingIndex = 0;
     const catKeys = Object.keys(CATEGORIES);
     const centroids = catKeys.map((_, i) => fibPoint(i, catKeys.length, SPHERE_R));
 
     SUBDOMAINS.forEach(d => {
       if (d.dedup) return;
-      const key = d.sub + '.' + ROOT_DOMAIN;
+      const key = d.domain ? d.domain : d.sub + '.' + ROOT_DOMAIN;
       if (seen.has(key)) return;
       seen.add(key);
 
@@ -89,9 +96,27 @@ const Graph = (() => {
       const ci = Math.max(0, catKeys.indexOf(d.cat));
       const c = centroids[ci];
       const isProdi = PRODI.has(d.sub);
+      const isLpm = LPM_PERS.has(d.sub);
       const radial = isProdi
         ? 1.34 + Math.random() * 0.33
+        : isLpm
+        ? 1.67 + Math.random() * 0.17
         : 0.8 + Math.random() * 0.45;
+
+      let bx, by, bz;
+      if (isLpm) {
+        const ringCount = LPM_PERS.size;
+        const ringIdx = lpmRingIndex++;
+        const ang = (ringIdx / ringCount) * Math.PI * 2;
+        const R = radial * SPHERE_R;
+        bx = Math.cos(ang) * R;
+        by = (Math.random() * 2 - 1) * SPHERE_R * 0.12;
+        bz = Math.sin(ang) * R;
+      } else {
+        bx = c.x * radial + (Math.random() * 2 - 1) * JITTER_R;
+        by = c.y * radial + (Math.random() * 2 - 1) * JITTER_R;
+        bz = c.z * radial + (Math.random() * 2 - 1) * JITTER_R;
+      }
 
       nodes.push({
         id: key,
@@ -105,12 +130,13 @@ const Graph = (() => {
         core: CORE_SYSTEMS.has(d.sub),
         info: d.cat === 'O',
         prodi: PRODI.has(d.sub),
+        lpm: isLpm,
         desc: d.desc,
         radius: isActive ? NODE_RADIUS : DEAD_RADIUS,
         url: 'https://' + key,
-        baseX: c.x * radial + (Math.random() * 2 - 1) * JITTER_R,
-        baseY: c.y * radial + (Math.random() * 2 - 1) * JITTER_R,
-        baseZ: c.z * radial + (Math.random() * 2 - 1) * JITTER_R
+        baseX: bx,
+        baseY: by,
+        baseZ: bz
       });
 
       links.push({
@@ -333,7 +359,7 @@ const Graph = (() => {
     g.append('circle')
       .attr('id', 'track-highlight')
       .attr('fill', 'none')
-      .attr('stroke', '#5ff057')
+      .attr('stroke', '#0dc700')
       .attr('stroke-width', 1.5)
       .attr('stroke-dasharray', '4 4')
       .style('display', 'none');
@@ -384,8 +410,8 @@ const Graph = (() => {
         d3.select(this)
           .append('circle')
           .attr('class', 'node-core')
-          .attr('fill', d => d.core ? CORE_COLOR : d.info ? INFO_COLOR : d.prodi ? PRODI_COLOR : d.fac ? FAC_COLOR : '#5ff057')
-          .attr('stroke', d => d.core ? CORE_COLOR : d.info ? INFO_COLOR : d.prodi ? PRODI_COLOR : d.fac ? FAC_COLOR : '#d7ff50')
+          .attr('fill', d => d.core ? CORE_COLOR : d.info ? INFO_COLOR : d.prodi ? PRODI_COLOR : d.fac ? FAC_COLOR : d.lpm ? LPM_COLOR : '#0dc700')
+          .attr('stroke', d => d.core ? CORE_COLOR : d.info ? INFO_COLOR : d.prodi ? PRODI_COLOR : d.fac ? FAC_COLOR : d.lpm ? LPM_COLOR : '#ffe600')
           .attr('stroke-width', 0.8);
       });
 
@@ -395,7 +421,7 @@ const Graph = (() => {
       .join('text')
       .text(d => d.label)
       .attr('font-size', 8)
-      .attr('fill', d => d.core || d.info || d.prodi || d.fac ? '#ffffff' : '#d7ff50')
+      .attr('fill', d => d.core || d.info || d.prodi || d.fac || d.lpm ? '#ffffff' : '#ffe600')
       .attr('text-anchor', 'middle')
       .attr('dy', -10)
       .attr('pointer-events', 'none')
@@ -426,7 +452,8 @@ const Graph = (() => {
     if (node.info && !STATE.groups.info) return false;
     if (node.prodi && !STATE.groups.prodi) return false;
     if (node.fac && !STATE.groups.fac) return false;
-    if (!node.core && !node.info && !node.prodi && !node.fac && !STATE.groups.other) return false;
+    if (node.lpm && !STATE.groups.lpm) return false;
+    if (!node.core && !node.info && !node.prodi && !node.fac && !node.lpm && !STATE.groups.other) return false;
     return true;
   }
 
@@ -436,7 +463,8 @@ const Graph = (() => {
       { color: INFO_COLOR, label: 'Information Systems' },
       { color: PRODI_COLOR, label: 'Prodi' },
       { color: FAC_COLOR, label: 'Faculty' },
-      { color: '#5ff057', label: 'Others' },
+      { color: LPM_COLOR, label: 'LPM Pers' },
+      { color: '#0dc700', label: 'Others' },
       { color: '#555555', label: 'Dead / Error' }
     ];
     const filterData = [
@@ -444,7 +472,8 @@ const Graph = (() => {
       { key: 'info', label: 'Information Systems', color: INFO_COLOR },
       { key: 'prodi', label: 'Prodi', color: PRODI_COLOR },
       { key: 'fac', label: 'Faculty', color: FAC_COLOR },
-      { key: 'other', label: 'Others', color: '#5ff057' }
+      { key: 'lpm', label: 'LPM Pers', color: LPM_COLOR },
+      { key: 'other', label: 'Others', color: '#0dc700' }
     ];
 
     const sidebar = document.createElement('div');
@@ -565,7 +594,7 @@ const Graph = (() => {
         const b = project(d.target);
 const target = getNode(d.target);
       const dead = target && target.type === 'dead';
-      const linkColor = target ? (target.core ? CORE_COLOR : target.info ? INFO_COLOR : target.prodi ? PRODI_COLOR : target.fac ? FAC_COLOR : dead ? '#555555' : '#d7ff50') : '#555555';
+      const linkColor = target ? (target.core ? CORE_COLOR : target.info ? INFO_COLOR : target.prodi ? PRODI_COLOR : target.fac ? FAC_COLOR : target.lpm ? LPM_COLOR : dead ? '#555555' : '#ffe600') : '#555555';
       d3.select(this)
         .attr('x1', a.x).attr('y1', a.y)
         .attr('x2', b.x).attr('y2', b.y)
@@ -729,7 +758,7 @@ const target = getNode(d.target);
     wrap.id = 'search-control';
     wrap.innerHTML = `
       <input id="search-input" type="text" placeholder="Cari subdomain..." autocomplete="off" enterkeyhint="search">
-      <button id="search-btn" type="submit">Track</button>
+      <button id="search-btn" type="submit">Search</button>
       <div id="search-results"></div>
     `;
     document.body.appendChild(wrap);
