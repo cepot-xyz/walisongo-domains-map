@@ -1,5 +1,7 @@
 # Walisongo Domains Map
 
+![Walisongo Domains Map](Assets/images/banner.png)
+
 Walisongo Domains Map adalah sebuah projek yang memetakan keseluruhan subdomain walisongo.ac.id ke dalam visualisasi 3D interaktif. Projek ini bertujuan untuk memberikan gambaran menyeluruh mengenai infrastruktur web Universitas Islam Negeri (UIN) Walisongo Semarang, mulai dari sistem akademik, portal informasi, situs fakultas, hingga program studi yang tersebar di berbagai subdomain, termasuk juga LPM Pers (lembaga pers mahasiswa) yang tinggal di domain eksternal.
 
 ## Demo
