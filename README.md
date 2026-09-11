@@ -35,18 +35,6 @@ Seluruh 260 subdomain (plus 9 LPM Pers) telah didokumentasikan dengan deskripsi 
 - Vanilla JavaScript - Tanpa framework, murni JS
 - HTML5 & CSS3
 
-## Cara Menjalankan
-
-Buka `index.html` di browser, atau jalankan server lokal:
-
-```bash
-# Menggunakan Python
-python -m http.server 8000
-
-# Menggunakan Node.js
-npx serve .
-```
-
 ## Statistik
 
 | Kategori | Jumlah |
